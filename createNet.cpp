@@ -22,10 +22,6 @@ using namespace std;
 
 
 
-
-//store all node names and cooresponding memory locations
-unordered_map<string, Node> netlist; 
-
 void createNet(string filename){
 
     string value; //storage for parsed string elements
