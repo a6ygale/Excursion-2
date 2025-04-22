@@ -185,7 +185,7 @@ void createNet(string filename){
 
 //  testing
 // int main(){
-//     createGates("input.txt"); 
+//     createNet("input.txt"); 
     
 //     return 0; 
 // }
