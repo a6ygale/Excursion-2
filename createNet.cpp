@@ -11,6 +11,7 @@ struct Node{
     string type; 
     Node* child1 = nullptr; 
     Node* child2 = nullptr; 
+    int cost = 0; // Cost of the node based on the technology library
 };
 
 unordered_map<string, Node> netlist; 
@@ -227,8 +228,8 @@ void createGates(string filename){
 
 
 //  testing
-// int main(){
-//     createGates("input.txt"); 
+int main(){
+     createGates("input.txt"); 
     
-//     return 0; 
-// }
+     return 0; 
+}
