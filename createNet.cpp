@@ -21,13 +21,7 @@ using namespace std;
 ///////////////////////////////////////////////////////////////////////
 
 
-//using nodes to store value of 
-struct Node{
-    string name; 
-    string type; 
-    Node* child1 = nullptr; 
-    Node* child2 = nullptr; 
-};
+
 
 //store all node names and cooresponding memory locations
 unordered_map<string, Node> netlist; 
