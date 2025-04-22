@@ -5,6 +5,17 @@
 #include <string>
 using namespace std; 
 
+////////////////////////////////////////////////////////////////////////////
+// take input.txt file and parses it to obtain information on node names, 
+// their types, and inputs. 
+//
+// creates global unordered map "netlist" where you can call a node based
+// on it's string name and it will return a pointer to the node that 
+// contains its name, type, children (outputs), cost, and will later 
+// contain cost to get to the end of network from current position
+////////////////////////////////////////////////////////////////////////////
+
+
 //using nodes to store value of 
 struct Node{
     string name; 
@@ -13,61 +24,11 @@ struct Node{
     Node* child2 = nullptr; 
 };
 
+//store all node names and cooresponding memory locations
 unordered_map<string, Node> netlist; 
 
 
-//creating new vector that defines gates in terms of outputs, not inputs 
-//provided in netlist
-vector<vector<string>> inputsToChildren(vector<vector<string>> in){
-    
-    string current; 
-    int k=1; //starts after name of node 
-    bool prevChild; 
-    
-    vector<vector<string>>children(in.size(),vector<string>(3,"")); 
 
-
-    cout<<endl<<endl<<endl; 
-    for(int i=0; i<in.size();i++){
-        current = in[i][0]; //for each gate well go through and check 
-                            //if mentioned as input
-        children[i][0]=current;
-        cout<<current<<endl; 
-        prevChild = 0; //new gate, no previous children 
-        int gate = 0; //indexing for each gate
-
-        while(gate<in.size()){
-            cout<<in[gate].size(); 
-            //cout<<k<<endl<<endl; 
-            int k=1; //starts after name of node
-
-            while(in[gate].size() > 1 && k < in[gate].size()){
-                cout<<in[gate][k]; 
-                if (in[gate][k]==current){
-                     
-                    if(prevChild ==1){
-                        children[i][2] = in[gate][0]; //name of mentioned gate is child
-                        cout<<in[gate][1]; 
-                    }
-                    if(prevChild ==0){
-                        children[i][1] = in[gate][0]; //name of mentioned gate is child
-                        prevChild = 1; 
-                        cout<<in[gate][0]; 
-                    }
-                }
-                k++; 
-            }
-    
-            gate++; 
-        }
-
-    }
-     
-
-
-    return children; 
-
-}
 
 void createGates(string filename){
 
