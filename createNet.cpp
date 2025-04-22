@@ -7,6 +7,9 @@ using namespace std;
 
 #include "functions.h"
 
+//Author: Abygale Cochrane
+
+
 //using nodes to store value of 
 struct Node{
     string name; 
