@@ -21,6 +21,8 @@ struct Node {
     int total = 0; 
 };
 
+// Global netlist of gates
+unordered_map<string, Node> netlist;
 
 
 void createNet(string filename); 
