@@ -54,12 +54,12 @@ vector<vector<string>> inputsToChildren(vector<vector<string>> in){
                      
                     if(prevChild ==1){
                         children[i][2] = in[gate][0]; //name of mentioned gate is child
-                        cout<<in[gate][1]; 
+                        
                     }
                     if(prevChild ==0){
                         children[i][1] = in[gate][0]; //name of mentioned gate is child
                         prevChild = 1; 
-                        cout<<in[gate][0]; 
+                         
                     }
                 }
                 k++; 
