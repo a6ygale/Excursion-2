@@ -29,7 +29,8 @@ struct Node{
     Node* child2 = nullptr; 
 };
 
-
+//store all node names and cooresponding memory locations
+unordered_map<string, Node> netlist; 
 
 void createNet(string filename){
 
