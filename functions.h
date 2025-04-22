@@ -23,7 +23,7 @@ struct Node {
 
 
 
-void createGates(string filename); 
+void createNet(string filename); 
 vector<vector<string>> inputsToChildren(vector<vector<string>> in); 
 
 void convertToNandNotTree(Node* currentNode); 
