@@ -5,6 +5,8 @@
 #include <string>
 using namespace std; 
 
+#include "functions.h"
+
 ////////////////////////////////////////////////////////////////////////////
 // take input.txt file and parses it to obtain information on node names, 
 // their types, and inputs. 
