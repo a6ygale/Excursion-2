@@ -9,6 +9,17 @@ using namespace std;
 
 //Author: Abygale Cochrane
 
+///////////////////////////////////////////////////////////////////////////
+// void createNet(string filename); 
+//   take input.txt file and parses it to obtain information on node names, 
+//   their types, and inputs. 
+
+//   creates global unordered map "netlist" where you can call a node based
+//   on it's string name and it will return a pointer to the node that 
+//   contains its name, type, children (outputs), cost, and will later 
+//   contain cost to get to the end of network from current position
+///////////////////////////////////////////////////////////////////////
+
 
 //using nodes to store value of 
 struct Node{
