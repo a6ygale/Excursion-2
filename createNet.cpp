@@ -3,7 +3,9 @@
 #include <unordered_map>
 #include <fstream>
 #include <string>
-using namespace std; 
+using namespace std;
+
+#include "functions.h"
 
 //using nodes to store value of 
 struct Node{
@@ -13,61 +15,7 @@ struct Node{
     Node* child2 = nullptr; 
 };
 
-unordered_map<string, Node> netlist; 
 
-
-//creating new vector that defines gates in terms of outputs, not inputs 
-//provided in netlist
-vector<vector<string>> inputsToChildren(vector<vector<string>> in){
-    
-    string current; 
-    int k=1; //starts after name of node 
-    bool prevChild; 
-    
-    vector<vector<string>>children(in.size(),vector<string>(3,"")); 
-
-
-    cout<<endl<<endl<<endl; 
-    for(int i=0; i<in.size();i++){
-        current = in[i][0]; //for each gate well go through and check 
-                            //if mentioned as input
-        children[i][0]=current;
-        cout<<current<<endl; 
-        prevChild = 0; //new gate, no previous children 
-        int gate = 0; //indexing for each gate
-
-        while(gate<in.size()){
-            cout<<in[gate].size(); 
-            //cout<<k<<endl<<endl; 
-            int k=1; //starts after name of node
-
-            while(in[gate].size() > 1 && k < in[gate].size()){
-                cout<<in[gate][k]; 
-                if (in[gate][k]==current){
-                     
-                    if(prevChild ==1){
-                        children[i][2] = in[gate][0]; //name of mentioned gate is child
-                        cout<<in[gate][1]; 
-                    }
-                    if(prevChild ==0){
-                        children[i][1] = in[gate][0]; //name of mentioned gate is child
-                        prevChild = 1; 
-                        cout<<in[gate][0]; 
-                    }
-                }
-                k++; 
-            }
-    
-            gate++; 
-        }
-
-    }
-     
-
-
-    return children; 
-
-}
 
 void createGates(string filename){
 
