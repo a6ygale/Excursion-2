@@ -8,6 +8,8 @@ using namespace std;
 
 #include "functions.h"
 
+//Author: Abygale Cochrane
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 //  vector<vector<string>> inputsToChildren(vector<vector<string>> in); 
