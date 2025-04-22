@@ -31,7 +31,7 @@ struct Node{
 
 
 
-void createGates(string filename){
+void createNet(string filename){
 
     string value; //storage for parsed string elements
     string name; //the title on input / gate
