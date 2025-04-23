@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <vector>
 #include <unordered_map>
 #include <fstream>
@@ -19,6 +19,25 @@ struct Node {
     Node* child2 = nullptr;
     int cost = 0; // Cost of the node based on the technology library
     int total = 0; 
+
+    // default constructor
+    Node() = default;
+
+    // "six‐arg" constructor so your Node{...} inits compile in gradescope
+    Node(const string& n,
+        const string& t,
+        Node* c1 = nullptr,
+        Node* c2 = nullptr,
+        int co = 0,
+        int to = 0)
+        : name(n),
+        type(t),
+        child1(c1),
+        child2(c2),
+        cost(co),
+        total(to)
+    {
+    }
 };
 
 // Global netlist of gates

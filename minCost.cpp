@@ -1,9 +1,10 @@
-#include <iostream>
+﻿#include <iostream>
 #include <vector>
 #include <unordered_map>
 #include <fstream>
 #include <string>
 #include <stack>
+#include <algorithm>
 using namespace std;
 
 #include "functions.h"
@@ -35,7 +36,7 @@ int minCost(Node* n) {
     if (!n || n->type == "INPUT")
         return 0;
 
-    // first compute child?subcosts
+    // first compute child‐subcosts
     int c1 = n->child1 ? minCost(n->child1) : 0;
     int c2 = n->child2 ? minCost(n->child2) : 0;
 
@@ -55,7 +56,7 @@ int minCost(Node* n) {
     }
 
     //
-    // 2) AND2: pattern = NOT ? child is NAND2(A,B)
+    // 2) AND2: pattern = NOT → child is NAND2(A,B)
     //
     if (n->type == "NOT"
         && n->child1
@@ -80,7 +81,7 @@ int minCost(Node* n) {
     }
 
     //
-    // 4) NOR2: pattern = NOT ? child is NAND2( NOT A, NOT B )
+    // 4) NOR2: pattern = NOT → child is NAND2( NOT A, NOT B )
     //
     if (n->type == "NOT"
         && n->child1 && n->child1->type == "NAND2"
@@ -93,7 +94,7 @@ int minCost(Node* n) {
     }
 
     //
-    // 5) AOI21: pattern = NOT ? child is NAND2( NAND2(A,B), C )
+    // 5) AOI21: pattern = NOT → child is NAND2( NAND2(A,B), C )
     //
     if (n->type == "NOT"
         && n->child1 && n->child1->type == "NAND2"
@@ -108,7 +109,7 @@ int minCost(Node* n) {
     }
 
     //
-    // 6) AOI22: pattern = NOT ? child is NAND2( NAND2(A,B), NAND2(C,D) )
+    // 6) AOI22: pattern = NOT → child is NAND2( NAND2(A,B), NAND2(C,D) )
     //
     if (n->type == "NOT"
         && n->child1 && n->child1->type == "NAND2"
