@@ -29,9 +29,7 @@ vector<vector<string>> inputsToChildren(vector<vector<string>> in);
 
 ------------------------------------------------------------------------
 void convertToNandNotTree(Node* currentNode); 
-
-------------------------------------------------------------------------
-void createNandNotTree(string filename); 
+Recursively transforms the subtree rooted at currentNode into an equivalent network composed only of 2-input NAND (NAND2) and NOT gates. 
 
 ------------------------------------------------------------------------
 int minCost(Node* root);
@@ -42,4 +40,4 @@ int minCost(Node* root);
 ------------------------------------------------------------------------
 
 int getMin(vector<int> items)
-  takes a vector of integers and returns the lowest value
+  takes a vector of integers and returns the lowest value gor distinct combinations of gatss yhat can compose specific components. 
