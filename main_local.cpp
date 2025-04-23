@@ -265,7 +265,7 @@ void createNet(string filename){
 
 */
 
-
+/*
 int main(){
     createNet("input.txt"); 
     
@@ -316,3 +316,4 @@ int main(){
 
     return 0; 
 }
+*/
