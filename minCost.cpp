@@ -33,8 +33,10 @@ unordered_map<string, int> gateCosts = {
 
 
 int minCost(Node* n) {
-    if (!n || n->type == "INPUT")
-        return 0;
+    if (!n) return 0;
+    if (n->type == "INPUT") return 0;
+    if (n->type == "OUTPUT")  // just score its one child
+        return minCost(n->child1);
 
     // first compute child‐subcosts
     int c1 = n->child1 ? minCost(n->child1) : 0;
