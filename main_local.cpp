@@ -10,6 +10,71 @@
 
 using namespace std; 
 
+int main(){
+    // 1 - create netlist from text file
+    createNet("input.txt"); 
+    
+    // test output netlist for verification
+    for (const auto& kv : netlist) {
+        // kv.first  is the gate name
+        // kv.second is the Node
+        cout << "Gate: " << kv.first
+            << "   type=" << kv.second.type;
+        if (kv.second.child1)
+            cout << "   child1=" << kv.second.child1->name;
+        if (kv.second.child2)
+            cout << "   child2=" << kv.second.child2->name;
+        cout << "\n";
+    }
+    
+
+    // 2 - find the output gate from when we read the net list
+    // old approach looking for F, but not all output's are F (and not all F's are output)
+    /*
+    Node* root = &netlist.at("F");
+    // now do your conversion + minCost
+    convertToNandNotTree(root);
+    */
+
+    if (outputName.empty()) {
+        cerr << "Error: no OUTPUT declared\n";
+        return 1;
+    }
+    Node* root = &netlist.at(outputName);
+
+    // 3 - convert to NAND-NOT tree
+    convertToNandNotTree(root);
+
+    // 4 - dump everything so we can eyeball it
+    cout << "After NAND-NOT conversion:\n";
+    for (auto& kv : netlist) {
+        auto& n = kv.second;
+        cout
+            << "Gate: " << n.name
+            << "  type=" << n.type
+            << "  cost=" << n.cost;
+        if (n.child1) cout << "  c1=" << n.child1->name;
+        if (n.child2) cout << "  c2=" << n.child2->name;
+        cout << "\n";
+    }
+
+    
+    // 5 - total cost as a sanity check
+    int total = 0;
+    for (auto& kv : netlist) total += kv.second.cost;
+    cout << "Total summed cost: " << total << "\n";
+
+    // 6 - calculate minimum cost of converted NAND-NOT tree
+    int minimal = minCost(root);
+    cout << "Minimal total cost = " << minimal << "\n";
+
+    // 7 - write to file
+    ofstream fout("output.txt");
+    fout << minimal << "\n";
+    fout.close();
+
+    return 0; 
+}
 
 /*
 
@@ -266,56 +331,4 @@ void createNet(string filename){
 */
 
 
-int main(){
-    createNet("input.txt"); 
-    
-    // test output netlist for verification
-    for (const auto& kv : netlist) {
-        // kv.first  is the gate name
-        // kv.second is the Node
-        cout << "Gate: " << kv.first
-            << "   type=" << kv.second.type;
-        if (kv.second.child1)
-            cout << "   child1=" << kv.second.child1->name;
-        if (kv.second.child2)
-            cout << "   child2=" << kv.second.child2->name;
-        cout << "\n";
-    }
-    
 
-    // 2) find the output gate (named "F" in your examples)
-    Node* root = &netlist.at("F");
-    // now do your conversion + minCost
-    convertToNandNotTree(root);
-
-    // write it out
-
-    // 4) dump everything so we can eyeball it
-    cout << "After NAND-NOT conversion:\n";
-    for (auto& kv : netlist) {
-        auto& n = kv.second;
-        cout
-            << "Gate: " << n.name
-            << "  type=" << n.type
-            << "  cost=" << n.cost;
-        if (n.child1) cout << "  c1=" << n.child1->name;
-        if (n.child2) cout << "  c2=" << n.child2->name;
-        cout << "\n";
-    }
-
-    // 5) total cost as a sanity check
-    int total = 0;
-    for (auto& kv : netlist) total += kv.second.cost;
-    cout << "Total summed cost: " << total << "\n";
-
-    // 6) compute the minimal cost on the converted NAND/NOT tree
-    int minimal = minCost(root);
-    cout << "Minimal total cost = " << minimal << "\n";
-
-    // 7) write it out
-    ofstream fout("output.txt");
-    fout << minimal << "\n";
-    fout.close();
-
-    return 0; 
-}
