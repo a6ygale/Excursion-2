@@ -23,13 +23,13 @@ struct Node {
     // default ctor
     Node() = default;
 
-    // the six-arg “aggregate” constructor
+    // six-argument ctor so Node{…} works
     Node(const string& _name,
         const string& _type,
         Node* _c1,
         Node* _c2,
-        int _cost,
-        int _total)
+        int            _cost,
+        int            _total)
         : name(_name)
         , type(_type)
         , child1(_c1)
@@ -39,7 +39,6 @@ struct Node {
     {
     }
 };
-
 // Global netlist of gates
 extern unordered_map<string, Node> netlist;
 extern unordered_map<string, int> gateCosts;

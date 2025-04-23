@@ -159,12 +159,18 @@ void createNandNotTree(string filename) {
     }
 
     // 3) **only** convert the single root “F”
-    auto it = netlist.find("F");
-    if (it == netlist.end()) {
-        cerr << "Error: no node 'F'\n";
+    Node* root = nullptr;
+    for (auto& kv : netlist) {
+        if (kv.second.type == "OUTPUT") {
+            root = &kv.second;
+            break;
+        }
+    }
+    if (!root) {
+        cerr << "Error: no OUTPUT node in netlist\n";
         return;
     }
-    convertToNandNotTree(&it->second);
+    convertToNandNotTree(root);
 
     // 4) (optional) write total cost or dump the tree…
     int total = 0;
