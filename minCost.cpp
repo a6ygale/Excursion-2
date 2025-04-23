@@ -19,44 +19,110 @@ using namespace std;
 //
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-int minCost(Node* root){
+// Technology library cost for different gates - taken from pdf
+unordered_map<string, int> gateCosts = {
+    {"NOT", 2},
+    {"NAND2", 3},
+    {"AND2", 4},
+    {"NOR2", 6},
+    {"OR2", 4},
+    {"AOI21", 7},
+    {"AOI22", 7}
+};
 
 
-    vector<int> totals; 
-     
-    std::stack<Node*> s;
-    s.push(root);
-    root->total = root->cost; 
+int minCost(Node* n) {
+    if (!n || n->type == "INPUT")
+        return 0;
 
-    while (!s.empty()) {
-    // Pop node from stack to process
-    Node* curr = s.top();
-    s.pop();
+    // first compute child?subcosts
+    int c1 = n->child1 ? minCost(n->child1) : 0;
+    int c2 = n->child2 ? minCost(n->child2) : 0;
 
-    //tests current node information
-    //cout<<curr->data<<endl<<curr->length<<endl<<endl;  
+    std::vector<int> candidates;
 
-
-    // Push child2 first so that child1 is processed first
-    // (child2 will only be processed once all subtrees in child1 are processed)
-    if (curr->child1) {
-        s.push(curr->child1);
-        curr->child1->total = curr->child1->cost + curr->total; 
+    //
+    // 1) Pure NAND/NOT fallback
+    //
+    if (n->type == "NOT") {
+        // either a single NOT
+        candidates.push_back(gateCosts.at("NOT") + c1);
+        // or a 2-input NAND with both inputs = A
+        candidates.push_back(gateCosts.at("NAND2") + c1 + c1);
+    }
+    else if (n->type == "NAND2") {
+        candidates.push_back(gateCosts.at("NAND2") + c1 + c2);
     }
 
-    if (curr->child2) {
-        s.push(curr->child2);
-        curr->child2->total = curr->child2->cost + curr->total; 
+    //
+    // 2) AND2: pattern = NOT ? child is NAND2(A,B)
+    //
+    if (n->type == "NOT"
+        && n->child1
+        && n->child1->type == "NAND2"
+        && n->child1->child1 && n->child1->child2)
+    {
+        int a = minCost(n->child1->child1);
+        int b = minCost(n->child1->child2);
+        candidates.push_back(gateCosts.at("AND2") + a + b);
     }
 
-    //if no children add as path length (we hit output)
-    if(!curr->child1 && !curr->child2){
-        totals.push_back(curr->total); 
-        
+    //
+    // 3) OR2: pattern = NAND2( NOT A, NOT B )
+    //
+    if (n->type == "NAND2"
+        && n->child1 && n->child1->type == "NOT"
+        && n->child2 && n->child2->type == "NOT")
+    {
+        int a = minCost(n->child1->child1);
+        int b = minCost(n->child2->child1);
+        candidates.push_back(gateCosts.at("OR2") + a + b);
     }
 
+    //
+    // 4) NOR2: pattern = NOT ? child is NAND2( NOT A, NOT B )
+    //
+    if (n->type == "NOT"
+        && n->child1 && n->child1->type == "NAND2"
+        && n->child1->child1 && n->child1->child1->type == "NOT"
+        && n->child1->child2 && n->child1->child2->type == "NOT")
+    {
+        int a = minCost(n->child1->child1->child1);
+        int b = minCost(n->child1->child2->child1);
+        candidates.push_back(gateCosts.at("NOR2") + a + b);
     }
 
-    //find the shortest path and return
-    return getMin(totals); 
+    //
+    // 5) AOI21: pattern = NOT ? child is NAND2( NAND2(A,B), C )
+    //
+    if (n->type == "NOT"
+        && n->child1 && n->child1->type == "NAND2"
+        && n->child1->child1 && n->child1->child1->type == "NAND2"
+        && n->child1->child2)
+    {
+        Node* mid = n->child1;
+        int p = minCost(mid->child1->child1);
+        int q = minCost(mid->child1->child2);
+        int r = minCost(mid->child2);
+        candidates.push_back(gateCosts.at("AOI21") + p + q + r);
+    }
+
+    //
+    // 6) AOI22: pattern = NOT ? child is NAND2( NAND2(A,B), NAND2(C,D) )
+    //
+    if (n->type == "NOT"
+        && n->child1 && n->child1->type == "NAND2"
+        && n->child1->child1 && n->child1->child1->type == "NAND2"
+        && n->child1->child2 && n->child1->child2->type == "NAND2")
+    {
+        Node* m = n->child1;
+        int p = minCost(m->child1->child1);
+        int q = minCost(m->child1->child2);
+        int r = minCost(m->child2->child1);
+        int s = minCost(m->child2->child2);
+        candidates.push_back(gateCosts.at("AOI22") + p + q + r + s);
+    }
+
+    // pick the minimum of all legal candidates
+    return *std::min_element(candidates.begin(), candidates.end());
 }

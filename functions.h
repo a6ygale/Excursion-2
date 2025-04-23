@@ -22,16 +22,18 @@ struct Node {
 };
 
 // Global netlist of gates
-unordered_map<string, Node> netlist;
-
+extern unordered_map<string, Node> netlist;
+extern unordered_map<string, int> gateCosts;
 
 void createNet(string filename); 
 vector<vector<string>> inputsToChildren(vector<vector<string>> in); 
 
-void convertToNandNotTree(Node* currentNode); 
+void convertToNandNotTree(Node* cur); 
 void createNandNotTree(string filename); 
 
+int minCost(Node* root);
+
 int getMin(vector<int> items); 
-int minAddedRoute(Node* root); 
+// int minAddedRoute(Node* root); 
 
 #endif

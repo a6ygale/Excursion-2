@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <fstream>
 #include <string>
+#include <sstream>
 using namespace std;
 
 #include "functions.h"
@@ -20,8 +21,75 @@ using namespace std;
 //   contain cost to get to the end of network from current position
 ///////////////////////////////////////////////////////////////////////
 
+unordered_map<std::string, Node> netlist;
 
+void createNet(string filename) {
+    ifstream in(filename);
+    if (!in) {
+        cerr << "Error: could not open \"" << filename << "\"\n";
+        return;
+    }
 
+    vector<vector<string>> rows;
+    string line;
+    bool gateMode = false;
+
+    while (getline(in, line)) {
+        if (line.empty())
+            continue;
+
+        // split on spaces
+        istringstream iss(line);
+        vector<string> tok;
+        string w;
+        while (iss >> w) {
+            tok.push_back(w);
+        }
+
+        // before we hit the OUTPUT declaration, 
+        // we only see lines like "a INPUT" or "F OUTPUT"
+        if (!gateMode) {
+            if (tok.size() == 2 && tok[1] == "INPUT") {
+                // record an input node
+                netlist[tok[0]] = Node{ tok[0], tok[1], nullptr, nullptr, 0, 0 };
+            }
+            else if (tok.size() == 2 && tok[1] == "OUTPUT") {
+                // record the output node itself, then switch to gateMode
+                netlist[tok[0]] = Node{ tok[0], tok[1], nullptr, nullptr, 0, 0 };
+                gateMode = true;
+            }
+            continue;
+        }
+
+        // once in gateMode, lines look like "t1 = AND b c"
+        if (tok.size() >= 3) {
+            string name = tok[0];
+            string type = tok[2];
+            string in1 = tok.size() > 3 ? tok[3] : "";
+            string in2 = tok.size() > 4 ? tok[4] : "";
+
+            // stash the row for linking later
+            rows.push_back({ name, type, in1, in2 });
+
+            // create a blank node now, link children in the next pass
+            netlist[name] = Node{ name, type, nullptr, nullptr, 0, 0 };
+        }
+    }
+
+    in.close();
+
+    // now link up child1/child2 pointers
+    for (auto& r : rows) {
+        // r = { gateName, type, childName1, childName2 }
+        Node& n = netlist[r[0]];
+        if (r.size() > 2 && !r[2].empty())
+            n.child1 = &netlist[r[2]];
+        if (r.size() > 3 && !r[3].empty())
+            n.child2 = &netlist[r[3]];
+    }
+}
+
+/*
 void createNet(string filename){
 
     string value; //storage for parsed string elements
@@ -46,13 +114,18 @@ void createNet(string filename){
 
             int j=0; //iterates through characters in string
     
-            for(int k=0; k<4;k++){//expecting 4 values per line
-                value = ""; //clears string that we will use to collect individual values
-                while(line[j]!=' '&& line[j]!=NULL){//parses string
-                    value = value +line[j];
-                    j++;  
+            for (int k = 0; k < 4; ++k) {
+                value.clear();
+                // only index while j is in-range
+                while (j < (int)line.size() && line[j] != ' ') {
+                    value += line[j++];
                 }
-                j+=1;//once we hit blank space skip over
+                // skip the delimiter (if there is one)
+                if (j < (int)line.size())
+                    ++j;
+
+                // … now value is your token …
+            
 
                 //name of node stored
                 if (k==0){
@@ -68,20 +141,19 @@ void createNet(string filename){
                 }
 
                 //inputs of node stored
-                if (k==3){
-                     
-                    while (line[c]!= NULL){
-                        value = "";  
-                        while(line[c]!=' '&& line[c]!=NULL){
-                            value = value +line[c]; 
-                            c++; 
+                if (k == 3) {
+                    // keep going until c walks off the end
+                    while (c < (int)line.size()) {
+                        value.clear();
+                        // collect one token
+                        while (c < (int)line.size() && line[c] != ' ') {
+                            value += line[c++];
                         }
-                        
-                        Ninputs.push_back(value); 
-                         
-                        c+=1; //skip whitespace
+                        Ninputs.push_back(value);
+                        // skip the space, if any
+                        if (c < (int)line.size())
+                            ++c;
                     }
-
                 }
 
             }
@@ -101,8 +173,9 @@ void createNet(string filename){
         
 
         //goes through txt file to find start of net, skips over first mention of output
-        if (line[2] == 'O'){
-            start = 1; 
+        // guard against shorter lines
+        if (line.size() > 2 && line[2] == 'O') {
+            start = 1;
         }
 
         //handling direct inputs (a,b,c....)
@@ -176,7 +249,7 @@ void createNet(string filename){
     
 
 }
-
+*/
 
 
 //  testing

@@ -5,183 +5,180 @@
 #include <string>
 using namespace std;
 
-//#include "functions.h
+#include "functions.h"
 
 // Author: Max Banach
 // 4/21/2025
 
-// Node structure to store information about gates and their children
 /*
-struct Node {
-    string name;
-    string type;
-    Node* child1 = nullptr;
-    Node* child2 = nullptr;
-    int cost = 0; // Cost of the node based on the technology library
-    int total = 0; // combined cost to end from curren net position
-};
 
 // Global netlist of gates
 unordered_map<string, Node> netlist;
 */
 
-// Technology library cost for different gates - taken from pdf
-unordered_map<string, int> gateCosts = {
-    {"NOT", 2},
-    {"NAND2", 3},
-    {"AND2", 4},
-    {"NOR2", 6},
-    {"OR2", 4},
-    {"AOI21", 7},
-    {"AOI22", 7}
-};
 
+void convertToNandNotTree(Node* cur) {
+    if (!cur) return;
 
+    // 1) recurse on children first
+    if (cur->child1) convertToNandNotTree(cur->child1);
+    if (cur->child2) convertToNandNotTree(cur->child2);
 
-// Helper function to create a NAND-NOT tree from the original expression
-void convertToNandNotTree(Node* currentNode) {
-    if (!currentNode) {
-        return;
+    // 2) AND  ?  NOT( NAND )
+    if (cur->type == "AND") {
+        Node* A = cur->child1;
+        Node* B = cur->child2;
+
+        // create the intermediate NAND2
+        string nandName = cur->name + "_NAND";
+        netlist[nandName] = Node{ nandName, "NAND2", A, B, gateCosts["NAND2"], 0 };
+
+        // wrap it with a single NOT
+        string notName = cur->name + "_NOT";
+        netlist[notName] = Node{ notName, "NOT", &netlist[nandName], nullptr, gateCosts["NOT"], 0 };
+
+        // splice that NOT in place of this node
+        cur->type = "NOT";
+        cur->child1 = &netlist[notName];
+        cur->child2 = nullptr;
+        cur->cost = gateCosts["NOT"];
     }
+    // 3) OR  ?  NAND( NOT A, NOT B )
+    else if (cur->type == "OR") {
+        Node* A = cur->child1;
+        Node* B = cur->child2;
 
-    // Base case: If the node is already a NOT, no conversion needed
-    if (currentNode->type == "NOT") {
-        currentNode->cost = gateCosts["NOT"];
-        return;
-    }
+        // NOT A
+        string nA = cur->name + "_NOT1";
+        netlist[nA] = Node{ nA, "NOT", A, nullptr, gateCosts["NOT"], 0 };
 
-    // Recursive case: Convert children first (if they exist)
-    if (currentNode->child1) {
-        convertToNandNotTree(currentNode->child1);
-    }
-    if (currentNode->child2) {
-        convertToNandNotTree(currentNode->child2);
-    }
-
-    // Now convert based on the gate type:
-    if (currentNode->type == "AND") {
-        // A AND B = NOT (A NAND B)
-        string newNodeName = currentNode->name + "_NAND";
-        Node newNandNode;
-        newNandNode.name = newNodeName;
-        newNandNode.type = "NAND2";
-        newNandNode.child1 = currentNode->child1;
-        newNandNode.child2 = currentNode->child2;
-        netlist[newNodeName] = newNandNode;
-
-        // The NOT gate (NOT (A NAND B))
-        string notNodeName = currentNode->name + "_NOT";
-        Node notNode;
-        notNode.name = notNodeName;
-        notNode.type = "NOT";
-        notNode.child1 = &netlist[newNodeName];
-        netlist[notNodeName] = notNode;
-
-        currentNode->type = "NOT";
-        currentNode->child1 = &netlist[notNodeName];
-        currentNode->cost = gateCosts["NOT"] + gateCosts["NAND2"];
-    }
-    else if (currentNode->type == "OR") {
-        // A OR B = (NOT A) NAND (NOT B)
-        string newNot1Name = currentNode->name + "_NOT1";
-        Node newNot1;
-        newNot1.name = newNot1Name;
-        newNot1.type = "NOT";
-        newNot1.child1 = currentNode->child1;
-        netlist[newNot1Name] = newNot1;
-
-        string newNot2Name = currentNode->name + "_NOT2";
-        Node newNot2;
-        newNot2.name = newNot2Name;
-        newNot2.type = "NOT";
-        newNot2.child1 = currentNode->child2;
-        netlist[newNot2Name] = newNot2;
+        // NOT B
+        string nB = cur->name + "_NOT2";
+        netlist[nB] = Node{ nB, "NOT", B, nullptr, gateCosts["NOT"], 0 };
 
         // NAND of the two NOTs
-        string nandNodeName = currentNode->name + "_NAND";
-        Node nandNode;
-        nandNode.name = nandNodeName;
-        nandNode.type = "NAND2";
-        nandNode.child1 = &netlist[newNot1Name];
-        nandNode.child2 = &netlist[newNot2Name];
-        netlist[nandNodeName] = nandNode;
+        string d = cur->name + "_NAND";
+        netlist[d] = Node{ d, "NAND2", &netlist[nA], &netlist[nB], gateCosts["NAND2"], 0 };
 
-        currentNode->type = "NAND2";
-        currentNode->child1 = &netlist[nandNodeName];
-        currentNode->cost = gateCosts["NOT"] * 2 + gateCosts["NAND2"];
+        // splice that NAND into this node
+        cur->type = "NAND2";
+        cur->child1 = &netlist[nA];
+        cur->child2 = &netlist[nB];
+        cur->cost = gateCosts["NAND2"];
     }
-
-    // Assign the correct cost for the current node
-    if (currentNode->type == "NOT") {
-        currentNode->cost = gateCosts["NOT"];
+    // 4) leaf nodes get their library cost
+    else if (cur->type == "NOT") {
+        cur->cost = gateCosts["NOT"];
     }
-    else if (currentNode->type == "NAND2") {
-        currentNode->cost = gateCosts["NAND2"];
+    else if (cur->type == "NAND2") {
+        cur->cost = gateCosts["NAND2"];
     }
-    else if (currentNode->type == "AND2") {
-        currentNode->cost = gateCosts["AND2"];
-    }
-    else if (currentNode->type == "OR2") {
-        currentNode->cost = gateCosts["OR2"];
+    // 5) everything else (INPUT, OUTPUT) stays cost=0
+    else {
+        cur->cost = 0;
     }
 }
 
 void createNandNotTree(string filename) {
+    // 1) Read and parse exactly like createNet does
     ifstream file(filename);
-    string line;
-    vector<vector<string>> inputs;
-
-    while (getline(file, line)) {
-        vector<string> Ninputs;
-        size_t pos = 0;
-        string token;
-        while ((pos = line.find(' ')) != string::npos) {
-            token = line.substr(0, pos);
-            Ninputs.push_back(token);
-            line.erase(0, pos + 1);
-        }
-        Ninputs.push_back(line);
-        inputs.push_back(Ninputs);
-
-        string name = Ninputs[0];
-        string type = Ninputs[2];
-
-        Node node;
-        node.name = name;
-        node.type = type;
-        netlist[name] = node;
+    if (!file) {
+        cerr << "Error: could not open \"" << filename << "\"\n";
+        return;
     }
 
-    // Assign children nodes
-    for (auto& entry : netlist) {
-        Node* node = &entry.second;
-        for (auto& input : inputs) {
-            if (input[0] == node->name) {
-                node->child1 = &netlist[input[1]];
-                node->child2 = &netlist[input[2]];
+    vector<vector<string>> inputs;
+    string line;
+    bool seenOutput = false;
+
+    while (getline(file, line)) {
+        if (line.empty()) continue;
+        vector<string> toks;
+        int i = 0, n = (int)line.size();
+
+        // INPUT lines before `F OUTPUT`
+        if (!seenOutput) {
+            if (n > 2 && line[2] == 'O') {
+                seenOutput = true;
+            }
+            else {
+                // parse "a INPUT"
+                for (int t = 0; t < 2; ++t) {
+                    string tk;
+                    while (i < n && line[i] != ' ') tk.push_back(line[i++]);
+                    toks.push_back(tk);
+                    if (i < n) ++i;
+                }
+                // record
+                inputs.push_back(toks);
+                Node v; v.name = toks[0]; v.type = toks[1];
+                netlist[v.name] = v;
+                continue;
+            }
+        }
+
+        // gate lines: "t1 = AND b c"
+        // 1) name
+        string name;
+        while (i < n && line[i] != ' ') name.push_back(line[i++]);
+        if (i < n) ++i;
+        // 2) skip '='
+        if (i < n && line[i] == '=') ++i;
+        if (i < n && line[i] == ' ') ++i;
+        // 3) type
+        string type;
+        while (i < n && line[i] != ' ') type.push_back(line[i++]);
+        if (i < n) ++i;
+        toks.push_back(name);
+        toks.push_back(type);
+        // 4) inputs
+        while (i < n) {
+            string tk;
+            while (i < n && line[i] != ' ') tk.push_back(line[i++]);
+            toks.push_back(tk);
+            if (i < n) ++i;
+        }
+        inputs.push_back(toks);
+
+        Node g; g.name = name; g.type = type;
+        netlist[name] = g;
+    }
+    file.close();
+
+    // 2) Hook up children
+    auto children = inputsToChildren(inputs);
+    for (auto& kv : netlist) {
+        Node& nd = kv.second;
+        for (auto& r : children) {
+            if (r[0] == nd.name) {
+                if (!r[1].empty()) nd.child1 = &netlist[r[1]];
+                if (!r[2].empty()) nd.child2 = &netlist[r[2]];
                 break;
             }
         }
     }
 
-    // Start converting from output to input
-    for (auto& entry : netlist) {
-        Node* node = &entry.second;
-        convertToNandNotTree(node);
+    // 3) **only** convert the single root “F”
+    auto it = netlist.find("F");
+    if (it == netlist.end()) {
+        cerr << "Error: no node 'F'\n";
+        return;
     }
+    convertToNandNotTree(&it->second);
 
-    // Output the minimal cost
-    int totalCost = 0;
-    for (auto& entry : netlist) {
-        totalCost += entry.second.cost;
-    }
-
-    ofstream outputFile("output.txt");
-    outputFile << totalCost << endl;
-    outputFile.close();
+    // 4) (optional) write total cost or dump the tree…
+    int total = 0;
+    for (auto& kv : netlist) total += kv.second.cost;
+    ofstream out("output.txt");
+    out << total << "\n";
+    out.close();
 }
 
+
+// test
+/*
 int main(){
     createNandNotTree("input.txt");
     return 0;
 }
+*/
