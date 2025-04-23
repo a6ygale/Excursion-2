@@ -26,12 +26,12 @@ string outputName; // store outputName to reference as root in other functions
 
 void createNet(string filename) {
     ifstream in(filename);
-    if (!in) {
+    if (!in) { // if cannot take file in, kick out with error
         cerr << "Error: cannot open " << filename << "\n";
         return;
     }
 
-    // temporary map from gate name → its input names
+    // temporary map from gate to pull input names
     unordered_map<string, vector<string>> childNames;
 
     string line;
@@ -42,38 +42,40 @@ void createNet(string filename) {
         istringstream iss(line);
         vector<string> tok;
         string w;
-        while (iss >> w) tok.push_back(w);
+        while (iss >> w) {
+            tok.push_back(w);
+        }
 
         if (tok.size() == 2) {
-            // Declaration: "a INPUT" or "F OUTPUT"
+            // Declarations
             const string& name = tok[0];
             const string& type = tok[1];
             netlist[name] = Node{ name, type, nullptr, nullptr, 0, 0 };
             if (type == "OUTPUT")
                 outputName = name;
-            // no children yet—if it's OUTPUT we'll wire it below
+            // no children yet, if output then wire below
         }
         else if (tok.size() == 3) {
-            // Alias: "F = t5"
+            // Alias
             const string& name = tok[0];
             const string& child = tok[2];
             // must already have netlist[name] from the OUTPUT declaration
             childNames[name] = { child };
         }
         else if (tok.size() >= 4) {
-            // Gate: "g = AND x y" or "p = NOT a"
+            // Gate
             const string& name = tok[0];
             const string& type = tok[2];
 
-            // collect its inputs
+            // collect inputs
             vector<string> ins;
             for (size_t i = 3; i < tok.size(); ++i)
                 ins.push_back(tok[i]);
 
-            // remember this as the true root gate
+            // true root gate
             outputName = name;
 
-            // if we previously saw "name OUTPUT", override its type; otherwise create it
+            // override output type
             auto it = netlist.find(name);
             if (it == netlist.end() || it->second.type != "OUTPUT") {
                 netlist[name] = Node{ name, type, nullptr, nullptr, 0, 0 };
@@ -85,11 +87,11 @@ void createNet(string filename) {
             // stash its input names for the second pass
             childNames[name] = move(ins);
         }
-        // else: malformed line, ignore
+        // else malformed line, ignore
     }
     in.close();
 
-    // now wire up the Node* pointers
+    // wire Node* pointers
     for (auto& entry : childNames) {
         const string& gateName = entry.first;
         const vector<string>& inputs = entry.second;

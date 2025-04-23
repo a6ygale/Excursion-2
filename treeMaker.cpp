@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <vector>
 #include <unordered_map>
 #include <fstream>
@@ -24,7 +24,7 @@ void convertToNandNotTree(Node* cur) {
     if (cur->child1) convertToNandNotTree(cur->child1);
     if (cur->child2) convertToNandNotTree(cur->child2);
 
-    // 2) AND  ?  NOT( NAND )
+    // 2) AND  →  NOT( NAND )
     if (cur->type == "AND") {
         Node* A = cur->child1;
         Node* B = cur->child2;
@@ -43,7 +43,7 @@ void convertToNandNotTree(Node* cur) {
         cur->child2 = nullptr;
         cur->cost = gateCosts["NOT"];
     }
-    // 3) OR  ?  NAND( NOT A, NOT B )
+    // 3) OR  →  NAND( NOT A, NOT B )
     else if (cur->type == "OR") {
         Node* A = cur->child1;
         Node* B = cur->child2;
@@ -158,7 +158,7 @@ void createNandNotTree(string filename) {
         }
     }
 
-    // 3) **only** convert the single root �F�
+    // 3) **only** convert the single root “F”
     Node* root = nullptr;
     for (auto& kv : netlist) {
         if (kv.second.type == "OUTPUT") {
@@ -172,12 +172,14 @@ void createNandNotTree(string filename) {
     }
     convertToNandNotTree(root);
 
-    // 4) (optional) write total cost or dump the tree�
+    // 4) (optional) write total cost or dump the tree…
+    /*
     int total = 0;
     for (auto& kv : netlist) total += kv.second.cost;
     ofstream out("output.txt");
     out << total << "\n";
     out.close();
+    */
 }
 
 

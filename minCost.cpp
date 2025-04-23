@@ -38,15 +38,20 @@ int minCost(Node* n) {
     if (n->type == "OUTPUT")  // just score its one child
         return minCost(n->child1);
 
-    // first compute child‐subcosts
-    int c1 = n->child1 ? minCost(n->child1) : 0;
-    int c2 = n->child2 ? minCost(n->child2) : 0;
+    // compute child subcosts
+    int c1 = 0;
+    if (n->child1) {
+        c1 = minCost(n->child1);
+    }
 
-    std::vector<int> candidates;
+    int c2 = 0;
+    if (n->child2) {
+        c2 = minCost(n->child2);
+    }
 
-    //
-    // 1) Pure NAND/NOT fallback
-    //
+    vector<int> candidates;
+
+    // 1 - Pure NAND/NOT
     if (n->type == "NOT") {
         // either a single NOT
         candidates.push_back(gateCosts.at("NOT") + c1);
@@ -57,9 +62,7 @@ int minCost(Node* n) {
         candidates.push_back(gateCosts.at("NAND2") + c1 + c2);
     }
 
-    //
-    // 2) AND2: pattern = NOT → child is NAND2(A,B)
-    //
+    // 2 - AND2 pattern = NOT w/ child that is NAND2(A,B)
     if (n->type == "NOT"
         && n->child1
         && n->child1->type == "NAND2"
@@ -70,9 +73,7 @@ int minCost(Node* n) {
         candidates.push_back(gateCosts.at("AND2") + a + b);
     }
 
-    //
-    // 3) OR2: pattern = NAND2( NOT A, NOT B )
-    //
+    // 3 - OR2 pattern = NAND2( NOT A, NOT B )
     if (n->type == "NAND2"
         && n->child1 && n->child1->type == "NOT"
         && n->child2 && n->child2->type == "NOT")
@@ -82,9 +83,7 @@ int minCost(Node* n) {
         candidates.push_back(gateCosts.at("OR2") + a + b);
     }
 
-    //
-    // 4) NOR2: pattern = NOT → child is NAND2( NOT A, NOT B )
-    //
+    // 4 - NOR2 pattern = NOT w/ child that is NAND2( NOT A, NOT B )
     if (n->type == "NOT"
         && n->child1 && n->child1->type == "NAND2"
         && n->child1->child1 && n->child1->child1->type == "NOT"
@@ -95,9 +94,7 @@ int minCost(Node* n) {
         candidates.push_back(gateCosts.at("NOR2") + a + b);
     }
 
-    //
-    // 5) AOI21: pattern = NOT → child is NAND2( NAND2(A,B), C )
-    //
+    // 5 - AOI21 pattern = NOT w/ child that is NAND2( NAND2(A,B), C )
     if (n->type == "NOT"
         && n->child1 && n->child1->type == "NAND2"
         && n->child1->child1 && n->child1->child1->type == "NAND2"
@@ -110,9 +107,7 @@ int minCost(Node* n) {
         candidates.push_back(gateCosts.at("AOI21") + p + q + r);
     }
 
-    //
-    // 6) AOI22: pattern = NOT → child is NAND2( NAND2(A,B), NAND2(C,D) )
-    //
+    // 6 - AOI22 pattern = NOT w/ child that is NAND2( NAND2(A,B), NAND2(C,D) )
     if (n->type == "NOT"
         && n->child1 && n->child1->type == "NAND2"
         && n->child1->child1 && n->child1->child1->type == "NAND2"
@@ -126,6 +121,6 @@ int minCost(Node* n) {
         candidates.push_back(gateCosts.at("AOI22") + p + q + r + s);
     }
 
-    // pick the minimum of all legal candidates
-    return *std::min_element(candidates.begin(), candidates.end());
+    // pick min from candidates
+    return *min_element(candidates.begin(), candidates.end());
 }

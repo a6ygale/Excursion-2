@@ -70,7 +70,7 @@ int main(){
 
     // 7 - write to file
     ofstream out("output.txt");
-    out << minimal << "\n";
+    out << minimal;
     out.close();
 
     return 0; 
