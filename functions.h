@@ -17,25 +17,25 @@ struct Node {
     string type;
     Node* child1 = nullptr;
     Node* child2 = nullptr;
-    int cost = 0; // Cost of the node based on the technology library
-    int total = 0; 
+    int    cost = 0;
+    int    total = 0;
 
-    // default constructor
+    // default ctor
     Node() = default;
 
-    // "six‐arg" constructor so your Node{...} inits compile in gradescope
-    Node(const string& n,
-        const string& t,
-        Node* c1 = nullptr,
-        Node* c2 = nullptr,
-        int co = 0,
-        int to = 0)
-        : name(n),
-        type(t),
-        child1(c1),
-        child2(c2),
-        cost(co),
-        total(to)
+    // the six-arg “aggregate” constructor
+    Node(const string& _name,
+        const string& _type,
+        Node* _c1,
+        Node* _c2,
+        int _cost,
+        int _total)
+        : name(_name)
+        , type(_type)
+        , child1(_c1)
+        , child2(_c2)
+        , cost(_cost)
+        , total(_total)
     {
     }
 };
