@@ -1,4 +1,4 @@
-#include <iostream>
+ï»¿#include <iostream>
 #include <vector> 
 #include <unordered_map>
 #include <fstream>
@@ -23,6 +23,70 @@ using namespace std;
 
 unordered_map<std::string, Node> netlist;
 
+
+void createNet(string filename) {
+    ifstream in(filename);
+    if (!in) {
+        cerr << "Error: cannot open " << filename << "\n";
+        return;
+    }
+
+    // temporary map from gate name â†’ its input names
+    unordered_map<string, vector<string>> childNames;
+
+    string line;
+    while (getline(in, line)) {
+        if (line.empty()) continue;
+
+        // split line into tokens
+        istringstream iss(line);
+        vector<string> tok;
+        string w;
+        while (iss >> w) tok.push_back(w);
+
+        if (tok.size() == 2) {
+            // Declaration: "a INPUT" or "F OUTPUT"
+            const string& name = tok[0];
+            const string& type = tok[1];
+            netlist[name] = Node{ name, type, nullptr, nullptr, 0, 0 };
+            // no children yetâ€”if it's OUTPUT we'll wire it below
+        }
+        else if (tok.size() == 3) {
+            // Alias: "F = t5"
+            const string& name = tok[0];
+            const string& child = tok[2];
+            // must already have netlist[name] from the OUTPUT declaration
+            childNames[name] = { child };
+        }
+        else if (tok.size() >= 4) {
+            // Gate: "g = AND x y" or "p = NOT a"
+            const string& name = tok[0];
+            const string& type = tok[2];
+            vector<string> ins;
+            for (size_t i = 3; i < tok.size(); ++i)
+                ins.push_back(tok[i]);
+            netlist[name] = Node{ name, type, nullptr, nullptr, 0, 0 };
+            childNames[name] = move(ins);
+        }
+        // else: malformed line, ignore
+    }
+    in.close();
+
+    // now wire up the Node* pointers
+    for (auto& entry : childNames) {
+        const string& gateName = entry.first;
+        const vector<string>& inputs = entry.second;
+        Node& gate = netlist[gateName];
+
+        if (inputs.size() > 0)
+            gate.child1 = &netlist.at(inputs[0]);
+        if (inputs.size() > 1)
+            gate.child2 = &netlist.at(inputs[1]);
+    }
+}
+
+
+/*
 void createNet(string filename) {
     ifstream in(filename);
     if (!in) {
@@ -88,169 +152,7 @@ void createNet(string filename) {
             n.child2 = &netlist[r[3]];
     }
 }
-
-/*
-void createNet(string filename){
-
-    string value; //storage for parsed string elements
-    string name; //the title on input / gate
-    string type; //input output and or etc
-
-    vector<vector<string>> inputs; //title of node and inputs to it
-    
-
-    bool start = 0; //indicates start of gates in file
-
-    ifstream file(filename);
-    string line; //holds a line in txt file as string
-    
-    while (getline(file, line)) {
-        vector<string> Ninputs = {}; 
-        int c = 0;//indicates index of input elements in string  
-
-
-        //if it's a gate 
-        if (start ==1){
-
-            int j=0; //iterates through characters in string
-    
-            for (int k = 0; k < 4; ++k) {
-                value.clear();
-                // only index while j is in-range
-                while (j < (int)line.size() && line[j] != ' ') {
-                    value += line[j++];
-                }
-                // skip the delimiter (if there is one)
-                if (j < (int)line.size())
-                    ++j;
-
-                // … now value is your token …
-            
-
-                //name of node stored
-                if (k==0){
-                    name = value; 
-                    Ninputs.push_back(name); 
-                     
-                }
-
-                //type of node stored
-                if (k==2){
-                    type = value; 
-                    c = j; //store index for end of type, beginning of inputs
-                }
-
-                //inputs of node stored
-                if (k == 3) {
-                    // keep going until c walks off the end
-                    while (c < (int)line.size()) {
-                        value.clear();
-                        // collect one token
-                        while (c < (int)line.size() && line[c] != ' ') {
-                            value += line[c++];
-                        }
-                        Ninputs.push_back(value);
-                        // skip the space, if any
-                        if (c < (int)line.size())
-                            ++c;
-                    }
-                }
-
-            }
-
-
-            inputs.push_back(Ninputs); //push into vector storing all nodes and cooresponding inputs
-
-            //write the new node properties and adds to unordered map
-            Node node; 
-            node.name = name; 
-            node.type = type; 
-            netlist[name] = node; 
-             
-        }
-
-         
-        
-
-        //goes through txt file to find start of net, skips over first mention of output
-        // guard against shorter lines
-        if (line.size() > 2 && line[2] == 'O') {
-            start = 1;
-        }
-
-        //handling direct inputs (a,b,c....)
-        if (start == 0){
-            int j=0; //iterates through characters in string
-    
-            for(int k=0; k<2;k++){//expecting 2 values per line
-                value = ""; //clears string that we will use to collect individual values
-                while(line[j]!=' '&& line[j]!=NULL){//parses string 
-                    value = value +line[j];
-                    j++;  
-                }
-                j+=1;//once we hit blank space skip over
-
-                if (k==0){
-                    name = value; 
-                    Ninputs.push_back(name); 
-                    inputs.push_back(Ninputs); //we only need name here
-                }
-
-                if (k==1){
-                    type = value; 
-                }
-                }
-                
-            //write the new node properties and adds to unordered map
-            Node node; 
-            node.name = name; 
-            node.type = type; 
-            netlist[name] = node; 
-            
-
-        }
-
-
-    }
-
-    file.close();
-
-
-    //check input array
-    // for(int x = 0; x<inputs.size(); x++){
-
-    //     for(int y = 0; y<inputs[x].size(); y++){
-    //         cout<<"  "<<inputs[x][y]; 
-    //     }
-    //     cout<<endl; 
-    // }
-
-
-    //switches input nodes to cooresponding children for each node
-    vector<vector<string>> children = inputsToChildren(inputs); 
-
-   
-    string current; //holds current position in netlist
-    for(auto it = netlist.begin(); it != netlist.end(); it++){
-        current = (it->first);  //first node name
-
-        //if this node is mentioned as an input, make pointer to child
-        for(int i = 0; i< inputs.size(); i++){
-            if(children[i][0]==current){
-                it->second.child1 = &netlist[children[i][1]]; 
-                it->second.child2 = &netlist[children[i][2]]; 
-
-                //check
-                //cout<<"Gate: "<<children[i][0]<<"     Children: "<<children[i][1]<<" , "<<children[i][2]<<endl; 
-            }
-        }
-
-    }
-    
-
-}
 */
-
 
 //  testing
 // int main(){
