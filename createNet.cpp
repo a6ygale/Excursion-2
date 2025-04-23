@@ -22,7 +22,7 @@ using namespace std;
 ///////////////////////////////////////////////////////////////////////
 
 unordered_map<std::string, Node> netlist;
-
+string outputName;
 
 void createNet(string filename) {
     ifstream in(filename);
@@ -49,6 +49,8 @@ void createNet(string filename) {
             const string& name = tok[0];
             const string& type = tok[1];
             netlist[name] = Node{ name, type, nullptr, nullptr, 0, 0 };
+            if (type == "OUTPUT")
+                outputName = name;
             // no children yet—if it's OUTPUT we'll wire it below
         }
         else if (tok.size() == 3) {

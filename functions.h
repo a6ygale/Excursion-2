@@ -42,6 +42,7 @@ struct Node {
 // Global netlist of gates
 extern unordered_map<string, Node> netlist;
 extern unordered_map<string, int> gateCosts;
+extern string outputName;
 
 void createNet(string filename); 
 vector<vector<string>> inputsToChildren(vector<vector<string>> in); 

@@ -285,7 +285,10 @@ int main(){
 
     // 2) find the output gate (named "F" in your examples)
     Node* root = &netlist.at("F");
+    // now do your conversion + minCost
     convertToNandNotTree(root);
+
+    // write it out
 
     // 4) dump everything so we can eyeball it
     cout << "After NAND-NOT conversion:\n";
