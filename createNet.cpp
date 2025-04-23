@@ -21,8 +21,9 @@ using namespace std;
 //   contain cost to get to the end of network from current position
 ///////////////////////////////////////////////////////////////////////
 
-unordered_map<std::string, Node> netlist;
+unordered_map<string, Node> netlist;
 string outputName;
+static string rootName;
 
 void createNet(string filename) {
     ifstream in(filename);
@@ -64,10 +65,25 @@ void createNet(string filename) {
             // Gate: "g = AND x y" or "p = NOT a"
             const string& name = tok[0];
             const string& type = tok[2];
+
+            // collect its inputs
             vector<string> ins;
             for (size_t i = 3; i < tok.size(); ++i)
                 ins.push_back(tok[i]);
-            netlist[name] = Node{ name, type, nullptr, nullptr, 0, 0 };
+
+            // remember this as the true root gate
+            rootName = name;
+
+            // if we previously saw "name OUTPUT", override its type; otherwise create it
+            auto it = netlist.find(name);
+            if (it == netlist.end() || it->second.type != "OUTPUT") {
+                netlist[name] = Node{ name, type, nullptr, nullptr, 0, 0 };
+            }
+            else {
+                it->second.type = type;
+            }
+
+            // stash its input names for the second pass
             childNames[name] = move(ins);
         }
         // else: malformed line, ignore
