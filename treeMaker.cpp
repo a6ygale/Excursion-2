@@ -33,13 +33,13 @@ void convertToNandNotTree(Node* cur) {
         string nandName = cur->name + "_NAND";
         netlist[nandName] = Node{ nandName, "NAND2", A, B, gateCosts["NAND2"], 0 };
 
-        // wrap it with a single NOT
-        string notName = cur->name + "_NOT";
-        netlist[notName] = Node{ notName, "NOT", &netlist[nandName], nullptr, gateCosts["NOT"], 0 };
+        // // wrap it with a single NOT
+        // string notName = cur->name + "_NOT";
+        // netlist[notName] = Node{ notName, "NOT", &netlist[nandName], nullptr, gateCosts["NOT"], 0 };
 
         // splice that NOT in place of this node
         cur->type = "NOT";
-        cur->child1 = &netlist[notName];
+        cur->child1 = &netlist[nandName];
         cur->child2 = nullptr;
         cur->cost = gateCosts["NOT"];
     }
