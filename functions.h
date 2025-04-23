@@ -39,7 +39,7 @@ struct Node {
     {
     }
 };
-// Global netlist of gates
+// Global declarations shared across different functions that may be defined in one of them
 extern unordered_map<string, Node> netlist;
 extern unordered_map<string, int> gateCosts;
 extern string outputName;

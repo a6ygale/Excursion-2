@@ -14,7 +14,7 @@ int main(){
     // 1 - create netlist from text file
     createNet("input.txt"); 
     
-    // test output netlist for verification
+    // 1 test output netlist for verification
     for (const auto& kv : netlist) {
         // kv.first  is the gate name
         // kv.second is the Node
@@ -45,7 +45,7 @@ int main(){
     // 3 - convert to NAND-NOT tree
     convertToNandNotTree(root);
 
-    // 4 - dump everything so we can eyeball it
+    // 3 test - dump everything so we can see if all tags are converted to NAND-NOT
     cout << "After NAND-NOT conversion:\n";
     for (auto& kv : netlist) {
         auto& n = kv.second;
@@ -69,9 +69,9 @@ int main(){
     cout << "Minimal total cost = " << minimal << "\n";
 
     // 7 - write to file
-    ofstream fout("output.txt");
-    fout << minimal << "\n";
-    fout.close();
+    ofstream out("output.txt");
+    out << minimal << "\n";
+    out.close();
 
     return 0; 
 }

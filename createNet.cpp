@@ -22,8 +22,7 @@ using namespace std;
 ///////////////////////////////////////////////////////////////////////
 
 unordered_map<string, Node> netlist;
-string outputName;
-static string rootName;
+string outputName; // store outputName to reference as root in other functions
 
 void createNet(string filename) {
     ifstream in(filename);
@@ -72,7 +71,7 @@ void createNet(string filename) {
                 ins.push_back(tok[i]);
 
             // remember this as the true root gate
-            rootName = name;
+            outputName = name;
 
             // if we previously saw "name OUTPUT", override its type; otherwise create it
             auto it = netlist.find(name);
@@ -103,7 +102,7 @@ void createNet(string filename) {
     }
 }
 
-
+// old functional createNet
 /*
 void createNet(string filename) {
     ifstream in(filename);
