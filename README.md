@@ -2,7 +2,9 @@ Excursion 2
 By: Abygale Cochrane and Max Banach
 
 Technology Mapping: uses netlist describing logic gates to find the 
-minimum cost to reach output node. The cost described can be found in output.txt
+minimum cost to reach output node. The cost described can be found in output.txt. 
+
+Input examples can be found in inputs.txt. 
 
 
 Helpful functions: 
